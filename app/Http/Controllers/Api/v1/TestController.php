@@ -8,13 +8,17 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\User;
+use Illuminate\Support\Facades\Auth;
 
 class TestController extends Controller
 {
     public function test()
     {
+        //$user = User::where(['id' => Auth::user()->id])->first();
+        //dd(User::find(1)->videos);
         return [
-            'key' => 'value'
+            'data' => User::find(1)->videos
         ];
     }
 }
