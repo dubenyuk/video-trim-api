@@ -8,6 +8,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TrimVideo;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ class TestController extends Controller
     {
         //$user = User::where(['id' => Auth::user()->id])->first();
         //dd(User::find(1)->videos);
+        dispatch(new TrimVideo());
         return [
             'data' => User::find(1)->videos
         ];

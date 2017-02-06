@@ -1,61 +1,37 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Home
- * Date: 05.02.2017
- * Time: 22:08
- */
 
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
-use FFMpeg\Coordinate\TimeCode;
-use FFMpeg\FFMpeg;
-use FFMpeg\Format\Video\WebM;
-use FFMpeg\Format\Video\WMV;
-use FFMpeg\Format\Video\X264;
+use App\Video;
+use App\VideoStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class VideoController extends Controller
 {
     public function store(Request $request)
     {
-        //dd(public_path());
-        //$ffmpeg = FFMpeg::create();
-        $ffmpeg = FFMpeg::create([
-            'ffmpeg.binaries'  => 'C:/FFmpeg/bin/ffmpeg.exe',
-            'ffprobe.binaries' => 'C:/FFmpeg/bin/ffprobe.exe',
-            'timeout'          => 0,
-            'ffmpeg.threads'   => 12,
-        ]);
+        $fileName = str_random(5).'.'.$request->video->extension();
+        $path = $request->video->storeAs('video', $fileName);
+        if($path)
+        {
+            $status = VideoStatus::where(['status' => 'scheduled'])->first();
+            $link = env('APP_URL').'/storage/'.$path;
+            $video = Video::create([
+                'user_id' => Auth::user()->id,
+                'status_id' => $status->id,
+                'path' => $link
+            ]);
+            if($video){
+                //dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName));
+                return response(['msg' => $video], 200);
+            }
 
-        $path = $request->video->storeAs('video', 'test.mp4');
-        if($path){
-            $video = $ffmpeg->open($request->video);
-            //$video = $ffmpeg->open('http://videotrim/storage/video/test.mp4');
-            $video->filters()->clip(TimeCode::fromSeconds(3), TimeCode::fromSeconds(15));
-            $video->save(new WebM(), 'output.mp4');
-            //$video->save(new X264(), 'output.mp4');
-            //Storage::put('new.mp4', $res);
-            //$new->save(storage_path().'/new.,p4');
 
-//            $frame = $video->frame(TimeCode::fromSeconds(10));
-//            $frame->save(storage_path().'/image.jpg');
-
-            return response(['msg' => $path], 200);
         }
         return response(['msg' => 'oops'], 500);
-
-
-
-
-
-//        $path = $request->video->storeAs('video', 'test.mp4');
-//        //$res = Storage::put('video', $request->video);
-//        if($path){
-//            return response(['msg' => $path], 200);
-//        }
-//        return response(['msg' => 'oops'], 500);
+////            $frame = $video->frame(TimeCode::fromSeconds(10));
+////            $frame->save(storage_path().'/image.jpg');
     }
 }

@@ -16,4 +16,11 @@ class Video extends Model
     {
         return $this->hasOne('App\VideoStatus');
     }
+
+    public function setStatus($statusName)
+    {
+        $status = VideoStatus::where(['status' => $statusName])->first();
+        $this->status_id = $status->id;
+        $this->save();
+    }
 }
