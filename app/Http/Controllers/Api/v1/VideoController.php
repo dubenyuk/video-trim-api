@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TrimVideo;
 use App\Video;
 use App\VideoStatus;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class VideoController extends Controller
                 'path' => $link
             ]);
             if($video){
-                //dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName));
+                dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName));
                 return response(['msg' => $video], 200);
             }
 
