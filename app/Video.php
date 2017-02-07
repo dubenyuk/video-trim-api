@@ -22,5 +22,6 @@ class Video extends Model
         $status = VideoStatus::where(['status' => $statusName])->first();
         $this->status_id = $status->id;
         $this->save();
+        return $this;
     }
 }

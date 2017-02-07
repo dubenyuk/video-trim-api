@@ -62,4 +62,27 @@ class VideoController extends ApiController
 ////            $frame = $video->frame(TimeCode::fromSeconds(10));
 ////            $frame->save(storage_path().'/image.jpg');
     }
+
+    public function restart(Request $request)
+    {
+        // TODO сделать валидацию параметров
+        $video = Video::where(['id' => $request->video_id])
+            ->first();
+
+        if( $video->status->status == 'failed' )
+        {
+            $video->setStatus('scheduled');
+            $arr = explode('/',$video->path);
+            $fileName = array_pop( $arr );
+            if
+            (
+                dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName))
+            )
+            {
+                return $this->setStatusCode(200)
+                    ->respond(['message' => 'Video will be restarted']);
+            }
+        }
+        return $this->respondInternalError('Video is not failed.');
+    }
 }
