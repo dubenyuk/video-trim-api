@@ -7,9 +7,12 @@ use App\Jobs\TrimVideo;
 use App\Utilities\Transformer\VideoTransformer;
 use App\Video;
 use App\VideoStatus;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use FFMpeg\FFMpeg;
+use FFMpeg\Coordinate\TimeCode;
 
 class VideoController extends ApiController
 {
@@ -58,8 +61,6 @@ class VideoController extends ApiController
             }
         }
         return $this->respondValidationErrors($validator->errors());
-////            $frame = $video->frame(TimeCode::fromSeconds(10));
-////            $frame->save(storage_path().'/image.jpg');
     }
 
     public function restart(Request $request)
@@ -90,6 +91,32 @@ class VideoController extends ApiController
                 }
             }
             return $this->respondInternalError('Video is not failed.');
+        }
+
+        return $this->respondValidationErrors($validator->errors());
+    }
+
+    public function frame(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'video' => 'required|file',
+            'second' => 'required|integer'
+        ]);
+
+        if(!$validator->fails())
+        {
+            $ffmpeg = FFMpeg::create([
+                'ffmpeg.binaries'  => env('FFMPEG'),
+                'ffprobe.binaries' => env('FFPROBE'),
+                'timeout'          => 0,
+                'ffmpeg.threads'   => 12,
+            ]);
+            $video = $ffmpeg->open($request->video);
+            $frame = $video->frame(TimeCode::fromSeconds($request->second));
+            $frame->save(public_path().'/image.jpg');
+            $image = File::get(public_path().'/image.jpg');
+
+            return response($image, 200, ['content-type' => 'image/jpg']);
         }
 
         return $this->respondValidationErrors($validator->errors());
