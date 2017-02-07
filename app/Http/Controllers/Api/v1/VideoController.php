@@ -57,32 +57,41 @@ class VideoController extends ApiController
                 }
             }
         }
-        return $this->setStatusCode(500)
-            ->respond(['validation_errors' => $validator->errors()]);
+        return $this->respondValidationErrors($validator->errors());
 ////            $frame = $video->frame(TimeCode::fromSeconds(10));
 ////            $frame->save(storage_path().'/image.jpg');
     }
 
     public function restart(Request $request)
     {
-        // TODO сделать валидацию параметров
-        $video = Video::where(['id' => $request->video_id])
-            ->first();
+        $validator = Validator::make($request->all(), [
+            'video_id' => 'required|integer',
+            'from' => 'required|integer',
+            'duration' => 'required|integer'
+        ]);
 
-        if( $video->status->status == 'failed' )
+        if(!$validator->fails())
         {
-            $video->setStatus('scheduled');
-            $arr = explode('/',$video->path);
-            $fileName = array_pop( $arr );
-            if
-            (
-                dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName))
-            )
+            $video = Video::where(['id' => $request->video_id])
+                ->first();
+
+            if( $video->status->status == 'failed' )
             {
-                return $this->setStatusCode(200)
-                    ->respond(['message' => 'Video will be restarted']);
+                $video->setStatus('scheduled');
+                $arr = explode('/',$video->path);
+                $fileName = array_pop( $arr );
+                if
+                (
+                dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName))
+                )
+                {
+                    return $this->setStatusCode(200)
+                        ->respond(['message' => 'Video will be restarted']);
+                }
             }
+            return $this->respondInternalError('Video is not failed.');
         }
-        return $this->respondInternalError('Video is not failed.');
+
+        return $this->respondValidationErrors($validator->errors());
     }
 }

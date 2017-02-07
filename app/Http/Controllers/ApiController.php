@@ -52,4 +52,10 @@ class ApiController extends Controller
             'data' => $data
         ]);
     }
+
+    public function respondValidationErrors($errors)
+    {
+        return $this->setStatusCode(500)
+            ->respond(['validation_errors' => $errors]);
+    }
 }
