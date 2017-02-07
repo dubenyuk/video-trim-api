@@ -47,7 +47,9 @@ class Handler extends ExceptionHandler
         $data = [
             'message' => $exception->getMessage(),
             'exception' => get_class($exception),
-            'status' => $exception->getCode()
+            'status' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine()
         ];
 
         if ($this->isHttpException($exception))

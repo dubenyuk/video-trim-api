@@ -14,7 +14,7 @@ class Video extends Model
 
     public function status()
     {
-        return $this->hasOne('App\VideoStatus');
+        return $this->hasOne('App\VideoStatus','id','status_id');
     }
 
     public function setStatus($statusName)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\ApiController;
 use App\Jobs\TrimVideo;
+use App\Utilities\Transformer\VideoTransformer;
 use App\Video;
 use App\VideoStatus;
 use Illuminate\Http\Request;
@@ -12,10 +13,28 @@ use Illuminate\Support\Facades\Validator;
 
 class VideoController extends ApiController
 {
+    protected $transformer;
+
+    /**
+     * VideoController constructor.
+     * @param VideoTransformer $transformer
+     */
+    public function __construct(VideoTransformer $transformer)
+    {
+        $this->transformer = $transformer;
+    }
+
+    public function index()
+    {
+        $videos = Video::where(['user_id' => Auth::user()->id])->get();
+        return $this->setStatusCode(200)
+            ->respond($this->transformer->transformCollection($videos));
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'video' => 'required|file',
+            'video' => 'file',
             'from' => 'required|integer',
             'duration' => 'required|integer'
         ]);
@@ -34,7 +53,7 @@ class VideoController extends ApiController
                 ]);
                 if($video){
                     dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName));
-                    return $this->respondCreated($video);
+                    return $this->respondCreated($this->transformer->transform($video));
                 }
             }
         }

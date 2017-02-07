@@ -8,5 +8,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => 'v1', 'middleware' => 'auth.basic'], function () {
     Route::get('/test',['uses' => 'Api\v1\TestController@test']);
+    Route::get('/video', ['uses' => 'Api\v1\VideoController@index']);
     Route::post('/video', ['uses' => 'Api\v1\VideoController@store']);
 });
