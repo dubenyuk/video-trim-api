@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Jobs\TrimVideo;
 use App\Video;
 use App\VideoStatus;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-class VideoController extends Controller
+class VideoController extends ApiController
 {
     public function store(Request $request)
     {
@@ -34,11 +34,12 @@ class VideoController extends Controller
                 ]);
                 if($video){
                     dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName));
-                    return response(['msg' => $video], 200);
+                    return $this->respondCreated($video);
                 }
             }
         }
-        return response(['msg' => $validator->errors()], 500);
+        return $this->setStatusCode(500)
+            ->respond(['validation_errors' => $validator->errors()]);
 ////            $frame = $video->frame(TimeCode::fromSeconds(10));
 ////            $frame->save(storage_path().'/image.jpg');
     }
