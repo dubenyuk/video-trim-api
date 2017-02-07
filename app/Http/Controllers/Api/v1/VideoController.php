@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\ApiController;
 use App\Jobs\TrimVideo;
+use App\Utilities\Ffmpeg\FfmpegBuilder;
 use App\Utilities\Transformer\VideoTransformer;
 use App\Video;
 use App\VideoStatus;
@@ -17,6 +18,7 @@ use FFMpeg\Coordinate\TimeCode;
 class VideoController extends ApiController
 {
     protected $transformer;
+    protected $ffmpeg;
 
     /**
      * VideoController constructor.
@@ -25,6 +27,7 @@ class VideoController extends ApiController
     public function __construct(VideoTransformer $transformer)
     {
         $this->transformer = $transformer;
+        $this->ffmpeg = FfmpegBuilder::create();
     }
 
     public function index()
@@ -78,13 +81,7 @@ class VideoController extends ApiController
 
             if( $video->status->status == 'failed' )
             {
-                $video->setStatus('scheduled');
-                $arr = explode('/',$video->path);
-                $fileName = array_pop( $arr );
-                if
-                (
-                dispatch(new TrimVideo($video, $request->from, $request->duration, $fileName))
-                )
+                if( $video->restart($request->from, $request->duration) )
                 {
                     return $this->setStatusCode(200)
                         ->respond(['message' => 'Video will be restarted']);
@@ -92,7 +89,6 @@ class VideoController extends ApiController
             }
             return $this->respondInternalError('Video is not failed.');
         }
-
         return $this->respondValidationErrors($validator->errors());
     }
 
@@ -105,13 +101,7 @@ class VideoController extends ApiController
 
         if(!$validator->fails())
         {
-            $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries'  => env('FFMPEG'),
-                'ffprobe.binaries' => env('FFPROBE'),
-                'timeout'          => 0,
-                'ffmpeg.threads'   => 12,
-            ]);
-            $video = $ffmpeg->open($request->video);
+            $video = $this->ffmpeg->open($request->video);
             $frame = $video->frame(TimeCode::fromSeconds($request->second));
             $frame->save(public_path().'/image.jpg');
             $image = File::get(public_path().'/image.jpg');

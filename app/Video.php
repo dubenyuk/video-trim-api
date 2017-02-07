@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Jobs\TrimVideo;
 
 class Video extends Model
 {
@@ -23,5 +24,14 @@ class Video extends Model
         $this->status_id = $status->id;
         $this->save();
         return $this;
+    }
+
+    public function restart($from, $duration)
+    {
+        $this->setStatus('scheduled');
+        $arr = explode('/',$this->path);
+        $fileName = array_pop( $arr );
+
+        return ( dispatch(new TrimVideo($this, $from, $duration, $fileName)) )? true : false;
     }
 }
