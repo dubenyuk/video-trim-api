@@ -28,7 +28,7 @@ class VideoController extends ApiController
     {
         $videos = Video::where(['user_id' => Auth::user()->id])->get();
         return $this->setStatusCode(200)
-            ->respond($this->transformer->transformCollection($videos));
+            ->respond(['data' => $this->transformer->transformCollection($videos)]);
     }
 
     public function store(Request $request)
