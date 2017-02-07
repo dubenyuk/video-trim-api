@@ -2,9 +2,12 @@
 
 namespace App\Utilities\Transformer;
 
-
 abstract class Transformer
 {
+    /**
+     * @param $items
+     * @return array
+     */
     public function transformCollection($items)
     {
         $result = [];
@@ -15,5 +18,9 @@ abstract class Transformer
         return $result;
     }
 
+    /**
+     * @param $item
+     * @return mixed
+     */
     public abstract function transform($item);
 }

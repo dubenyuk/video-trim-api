@@ -1,16 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: vitalij
- * Date: 07.02.2017
- * Time: 7:56
- */
 
 namespace App\Utilities\Transformer;
 
-
 class VideoTransformer extends Transformer
 {
+    /**
+     * @param $video
+     * @return array
+     */
     public function transform($video)
     {
         return [

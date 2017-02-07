@@ -12,12 +12,18 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
 
 class VideoController extends ApiController
 {
+    /**
+     * @var VideoTransformer
+     */
     protected $transformer;
+
+    /**
+     * @var \FFMpeg\FFMpeg
+     */
     protected $ffmpeg;
 
     /**
@@ -30,6 +36,9 @@ class VideoController extends ApiController
         $this->ffmpeg = FfmpegBuilder::create();
     }
 
+    /**
+     * @return mixed
+     */
     public function index()
     {
         $videos = Video::where(['user_id' => Auth::user()->id])->get();
@@ -37,6 +46,10 @@ class VideoController extends ApiController
             ->respond(['data' => $this->transformer->transformCollection($videos)]);
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -66,6 +79,10 @@ class VideoController extends ApiController
         return $this->respondValidationErrors($validator->errors());
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function restart(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -92,6 +109,10 @@ class VideoController extends ApiController
         return $this->respondValidationErrors($validator->errors());
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function frame(Request $request)
     {
         $validator = Validator::make($request->all(), [

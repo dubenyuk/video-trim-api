@@ -7,6 +7,11 @@ use Illuminate\Support\MessageBag;
 
 class RestValidator extends Validator
 {
+    /**
+     * @param $attribute
+     * @param $rule
+     * @param $parameters
+     */
     protected function addError($attribute, $rule, $parameters)
     {
         $message = $this->getMessage($attribute, $rule);

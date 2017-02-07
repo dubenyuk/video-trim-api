@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Utilities\Ffmpeg\FfmpegBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
 use FFMpeg\Format\Video\WebM;
 
@@ -32,12 +32,7 @@ class TrimVideo implements ShouldQueue
         $this->from = $from;
         $this->duration = $duration;
         $this->fileName = $fileName;
-        $this->ffmpeg = FFMpeg::create([
-            'ffmpeg.binaries'  => env('FFMPEG'),
-            'ffprobe.binaries' => env('FFPROBE'),
-            'timeout'          => 0,
-            'ffmpeg.threads'   => 12,
-        ]);
+        $this->ffmpeg = FfmpegBuilder::create();
     }
 
     /**
